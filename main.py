@@ -130,7 +130,7 @@ for i in range (1, len(RSS_feeds)):
                   }
     rssSources_lookup = rssSources_lookup.append(rssNewLine, ignore_index=True)
 
-rssSources_lookup.to_csv("rssSources.csv")
+rssSources_lookup.to_csv("rssSources.csv")  # Write working
 print("1.99. Static source fields retrieved")
 
 
@@ -149,6 +149,7 @@ print("2.1. RSS read commenced")
 
 feed_out = pd.DataFrame(columns = ['url', 'title', 'summary', 'published']) # Define db update
 url_count = 0
+story_count = 0
 for item in rssSources_URL:
     try:                                # Verify URL exits
         read_URL(item)
@@ -163,11 +164,12 @@ for item in rssSources_URL:
             entry_out = NewsFeed.entries[i]
             full_post = {'url': item, 'title': entry_out.title, 'summary': entry_out.summary, 'published': entry_out.published}
             feed_out = feed_out.append(full_post, ignore_index=True)
+            story_count = story_count + 1
     #
     except:
         day_failure = day_failure + 1
 
-feed_out.to_csv("newsfeed.csv")
+
 
 feed_out.to_csv("newsfeed.csv")
 blank = "*                              *"
@@ -180,7 +182,7 @@ print("* Newsfeed reading complete    *")
 print("* Total feed read = ", day_success + day_failure,      "      *")
 print("* Read success = ", day_success,         "         *")
 print("* Read fail = ", day_failure, "              *")
-print("* Stories read = ", day_stories, "        *")
+print("* Stories read = ", story_count, "        *")
 print(blank)
 print(blank)
 print(blank)
