@@ -17,8 +17,22 @@ from sqlalchemy import create_engine
 
 import datetime
 import time
-print('sqlalchemy version:', sqlalchemy.__version__)
+
 import datetime
+
+import mysql.connector as mc
+import pandas as pd
+import requests
+import feedparser
+from datetime import date
+from dateutil.parser import parse
+from dateutil.tz import gettz
+from nltk.corpus import stopwords
+from afinn import Afinn
+
+
+from sqlalchemy import create_engine
+import pymysql
 start_time  = datetime.datetime.now()
 
 # ====================================================
