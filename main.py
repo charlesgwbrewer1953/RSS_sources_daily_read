@@ -1,8 +1,8 @@
 import sys
 import pymysql
-import pymysql
 
 import sqlalchemy
+from sqlalchemy import create_engine
 print("sqlalchemy imported")
 import mysql.connector
 print("mysql.connector imported")
@@ -13,7 +13,7 @@ from datetime import date
 from dateutil.parser import parse
 from dateutil.tz import gettz
 
-from sqlalchemy import create_engine
+
 
 import datetime
 import time
@@ -97,54 +97,32 @@ def dbConnect(xtpw, db):
 
 # ==================================
 
-
-
-pd.set_option('display.max_rows', None)
-pd.set_option('display.max_columns', None)
-pd.set_option('display.width', None)
-pd.set_option('display.max_colwidth', 0)
-
-print("0. Database connection initiated")
 xtpw = "m3t1sz"
 db = "metis"
-
-
 try:
-    mydb = mysql.connector.connect(
-        host = "178.62.8.181",
-        port = 3306,
-        user = "metis",
-        password = xtpw,
-        database = db
-    )
-    print("Connected to mySQL database:", db )
+    conn = mc.connect(host="178.62.8.181",
+                      port=3306,
+                      user="metis",
+                      password=xtpw,
+                      database=db)
+    print("Connected to mySQL database:", db)
 except:
     print("Database access fail:", db)
-print("0. Database connection complete")
 
-# Retrieve static source data
-RSS_feeds = pd.read_sql("SELECT * FROM RSS_feeds", mydb)
-print("1.0. RSS_feeds static data retrieved")
+cursor = conn.cursor()
 
-rssSources_names = RSS_feeds["Feed"].unique()
-rssSources_Countries = RSS_feeds["Country"].unique()
-rssSources_Orientation = RSS_feeds["Orientation"].unique()
-rssSources_URL = RSS_feeds["URL"].unique()
+cursor = conn.cursor()
 
-# Construct RSS enrichment df
-rssSources_lookup = pd.DataFrame(columns = ['Feed', 'URL', 'Orientation', 'Country']) #Create empty dataframe
-rssSources_lookup.set_index('URL', inplace=True)
-for i in range (1, len(RSS_feeds)):
-    #for i in range(1, 4):
-    rssNewLine = {'Feed' : RSS_feeds.Feed[i],
-                  'URL' : RSS_feeds.URL[i],
-                  'Orientation' : RSS_feeds.Orientation[i],
-                  'Country' : RSS_feeds.Country[i]
-                  }
-    rssSources_lookup = rssSources_lookup.append(rssNewLine, ignore_index=True)
+#sql = '''SELECT item_title, orientation, item_date_published  FROM RSS_library12'''
+sql = '''SELECT Feed, URL, Orientation, Country, Language  FROM metis.RSS_feeds'''
+cursor.execute(sql)
+RSS_feeds = pd.DataFrame(cursor.fetchall())
+#result.columns = ['item', 'orientation', 'item_date_published']
+RSS_feeds.columns = ['Feed', 'URL', 'Orientation', 'Country', 'Language']
+rssSources_URL = RSS_feeds['URL']
+print(rssSources_URL)
+RSS_feeds.set_index("URL", inplace = True)
 
-rssSources_lookup.to_csv("rssSources.csv")  # Write working
-print("1.99. Static source fields retrieved")
 
 
 
