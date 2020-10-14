@@ -10,7 +10,7 @@ print("mysql.connector imported")
 from datetime import date
 from dateutil.parser import parse
 from dateutil.tz import gettz
-
+import ssl
 
 
 import datetime
@@ -149,7 +149,7 @@ for url in rssSources_URL:
         day_success = day_success + 1
         try:
             print("2.2.0.1 Entered try loop")
-            NewsFeed = feedparser.parse('https://abcnews.go.com/abcnews/topstories')
+            NewsFeed = feedparser.parse(url)
             print("2.2.0.2 NewsFeed created. Length", len(NewsFeed), 'URL', url)
             print(NewsFeed)
             url_count = url_count + 1
