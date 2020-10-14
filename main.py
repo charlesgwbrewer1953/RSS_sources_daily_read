@@ -1,3 +1,4 @@
+print("Section 0: Import modules")
 import sys
 import pymysql
 
@@ -36,9 +37,9 @@ import pymysql
 start_time  = datetime.datetime.now()
 
 # ====================================================
+print("Section 1: Define functions")
 
-
-
+# Define functions
 def read_URL(url):
     try:
         fp = requests.get(url)
@@ -96,7 +97,7 @@ def dbConnect(xtpw, db):
 
 
 # ==================================
-
+print("Section 2 - Establish database connection, Import static data")
 xtpw = "m3t1sz"
 db = "metis"
 try:
@@ -114,13 +115,11 @@ cursor = conn.cursor()
 cursor = conn.cursor()
 
 #sql = '''SELECT item_title, orientation, item_date_published  FROM RSS_library12'''
-sql = '''SELECT Feed, URL, Orientation, Country, Language  FROM metis.RSS_feeds'''
+sql = '''SELECT Feed, URL, Orientation, Country, Language FROM metis.RSS_feeds'''
 cursor.execute(sql)
 RSS_feeds = pd.DataFrame(cursor.fetchall())
-#result.columns = ['item', 'orientation', 'item_date_published']
 RSS_feeds.columns = ['Feed', 'URL', 'Orientation', 'Country', 'Language']
-rssSources_URL = RSS_feeds['URL']
-print(rssSources_URL)
+rssSources_URL = RSS_feeds['URL'] # Extract RSS feed URLs for read iteration
 RSS_feeds.set_index("URL", inplace = True)
 
 
@@ -128,7 +127,7 @@ RSS_feeds.set_index("URL", inplace = True)
 
 
 # --------------------------------------
-print('2.0 Newsfeed retrieval initiated')
+print('Section 3 - Newsfeed retrieval')
 today = date.today()
 
 print("2.0.1 Initiating sourceURL read validation")
@@ -153,32 +152,37 @@ for item in rssSources_URL:
         read_URL(item)
         print(item)
         day_success = day_success + 1
-        day_stories = day_stories +1
+
         NewsFeed = feedparser.parse(item)
         url_count = url_count + 1
         print("URL:", item, " URL_Count:", URL_count)
-
+        construct = pd.DataFrame(columns = ['feed_title', 'feed_link', 'feed_description', 'feed_last_updated', 'feed_language', 'feed_update_period',
+                                 'item_title', 'item_creator', 'item_date_published', 'item_description', 'item_category1',
+                                 'item_category2','item_category3','item_category4', 'item_category5', 'item_link', 'ext_name',
+                                 'orientation', 'country', 'afinn_score', 'bing_score', 'nrc_scores', 'loughran_scores'])
         for ent in range(1,len(d['entries'])):
-            out_df.loc[ent, 'feed_title'] =  d['feed']['title']
-            out_df.loc[ent, 'feed_link'] =  d['feed']['link']
-            out_df.loc[ent, 'feed_description'] =  d['feed']['description']
-            out_df.loc[ent, 'feed_last_updated'] =  d['feed']['updated']
-            out_df.loc[ent, 'feed_language'] =  d['feed']['language']
-            out_df.loc[ent, 'item_creator'] = d['feed']['author']
+            construct.loc[ent, 'feed_title'] =  d['feed']['title']
+            construct.loc[ent, 'feed_link'] =  d['feed']['link']
+            construct.loc[ent, 'feed_description'] =  d['feed']['description']
+            construct.loc[ent, 'feed_last_updated'] =  d['feed']['updated']
+            construct.loc[ent, 'feed_language'] =  d['feed']['language']
+            construct.loc[ent, 'item_creator'] = d['feed']['author']
 
 
-            out_df.loc[ent, 'item_title'] = d.entries[ent]['title']
-            out_df.loc[ent, 'item_date_published'] = d.entries[ent]['published']
-            out_df.loc[ent, 'item_link'] = d['entries'][0]['id']
+            construct.loc[ent, 'item_title'] = d.entries[ent]['title']
+            construct.loc[ent, 'item_date_published'] = d.entries[ent]['published']
+            construct.loc[ent, 'item_link'] = d['entries'][0]['id']
 
-            out_df.loc[ent, 'ext_name'] = RSS_feeds.loc[url,'Language']
-            out_df.loc[ent, 'orientation'] = RSS_feeds.loc[url,'Orientation']
-            out_df.loc[ent, 'country'] = RSS_feeds.loc[url,'Country']
+            construct.loc[ent, 'ext_name'] = RSS_feeds.loc[url,'Language']
+            construct.loc[ent, 'orientation'] = RSS_feeds.loc[url,'Orientation']
+            construct.loc[ent, 'country'] = RSS_feeds.loc[url,'Country']
 
-            out_df.loc[ent, 'afinn_score'] = filler
-            out_df.loc[ent, 'bing_score'] = filler
-            out_df.loc[ent, 'nrc_scores'] = filler
-            out_df.loc[ent, 'loughran_scores'] = filler
+            construct.loc[ent, 'afinn_score'] = filler
+            construct.loc[ent, 'bing_score'] = filler
+            construct.loc[ent, 'nrc_scores'] = filler
+            construct.loc[ent, 'loughran_scores'] = filler
+            day_stories = day_stories +1
+            out_df.append(contruct, ignore_index = True)
     #
     except:
         day_failure = day_failure + 1
@@ -196,7 +200,7 @@ print("* Newsfeed reading complete    *")
 print("* Total feed read = ", day_success + day_failure,      "      *")
 print("* Read success = ", day_success,         "         *")
 print("* Read fail = ", day_failure, "              *")
-print("* Stories read = ", story_count, "        *")
+print("* Stories read = ", day_stories, "        *")
 print(blank)
 print(blank)
 print(blank)
