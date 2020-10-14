@@ -135,12 +135,19 @@ print("2.0.1 Initiating sourceURL read validation")
 day_success = 0
 day_failure = 0
 day_stories = 0
-#         print("4.2 Processed RSS for ", item)
-print("2.1. RSS read commenced")
-
-feed_out = pd.DataFrame(columns = ['url', 'title', 'summary', 'published']) # Define db update
 url_count = 0
 story_count = 0
+#         print("4.2 Processed RSS for ", item)
+print("2.1. RSS read commenced")
+# define output
+out_df = pd.DataFrame(columns = ['feed_title', 'feed_link', 'feed_description', 'feed_last_updated', 'feed_language', 'feed_update_period',
+                                 'item_title', 'item_creator', 'item_date_published', 'item_description', 'item_category1',
+                                 'item_category2','item_category3','item_category4', 'item_category5', 'item_link', 'ext_name',
+                                 'orientation', 'country', 'afinn_score', 'bing_score', 'nrc_scores', 'loughran_scores'])
+filler = 'filler'
+
+
+
 for item in rssSources_URL:
     try:                                # Verify URL exits
         read_URL(item)
@@ -151,11 +158,27 @@ for item in rssSources_URL:
         url_count = url_count + 1
         print("URL:", item, " URL_Count:", URL_count)
 
-        for i in range(len(NewsFeed.entries)): # Read RSS for URL
-            entry_out = NewsFeed.entries[i]
-            full_post = {'url': item, 'title': entry_out.title, 'summary': entry_out.summary, 'published': entry_out.published}
-            feed_out = feed_out.append(full_post, ignore_index=True)
-            story_count = story_count + 1
+        for ent in range(1,len(d['entries'])):
+            out_df.loc[ent, 'feed_title'] =  d['feed']['title']
+            out_df.loc[ent, 'feed_link'] =  d['feed']['link']
+            out_df.loc[ent, 'feed_description'] =  d['feed']['description']
+            out_df.loc[ent, 'feed_last_updated'] =  d['feed']['updated']
+            out_df.loc[ent, 'feed_language'] =  d['feed']['language']
+            out_df.loc[ent, 'item_creator'] = d['feed']['author']
+
+
+            out_df.loc[ent, 'item_title'] = d.entries[ent]['title']
+            out_df.loc[ent, 'item_date_published'] = d.entries[ent]['published']
+            out_df.loc[ent, 'item_link'] = d['entries'][0]['id']
+
+            out_df.loc[ent, 'ext_name'] = RSS_feeds.loc[url,'Language']
+            out_df.loc[ent, 'orientation'] = RSS_feeds.loc[url,'Orientation']
+            out_df.loc[ent, 'country'] = RSS_feeds.loc[url,'Country']
+
+            out_df.loc[ent, 'afinn_score'] = filler
+            out_df.loc[ent, 'bing_score'] = filler
+            out_df.loc[ent, 'nrc_scores'] = filler
+            out_df.loc[ent, 'loughran_scores'] = filler
     #
     except:
         day_failure = day_failure + 1
