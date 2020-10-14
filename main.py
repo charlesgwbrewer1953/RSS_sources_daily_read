@@ -185,7 +185,7 @@ for item in rssSources_URL:
 
 
 
-feed_out.to_csv("newsfeed.csv")
+out_df.to_csv("newsfeed.csv")
 blank = "*                              *"
 print("2.99 Newsfeed reading complete")
 print("********************************")
@@ -208,26 +208,16 @@ print("")
 #-----------------
 print("3. Newsfeed Enrichment initiated")
 
-feed_out_augmented = pd.merge(feed_out,
-                              RSS_feeds,
-                              left_on = ['url' ],
-                              right_on = ['URL'],
-                              how = 'left')
-
-feed_out_augmented.drop(columns = ['url', 'AllSides Rating', 'Language'], inplace = True)
-feed_out_augmented.to_csv("newsfeed_augmented.csv")
-feed_out_augmented.columns = ['item_title', 'item_description', 'item_date_published', 'ext_name', 'feed_link', 'orientation', 'country']
-# Clean dates
 print("4. Data cleansing initiated")
 error_count = 0
-for item in range(0, len(feed_out_augmented)):
+for item in range(0, len(out_df)):
     try:
-        proper_date = parse(feed_out_augmented.item_date_published[item])
+        proper_date = parse(out_df.item_date_published[item])
 
     except:
         error_count = error_count + 1
     finally:
-        feed_out_augmented.item_date_published[item] = proper_date
+        out_df.item_date_published[item] = proper_date
 print('Error count (cleansing) = ', error_count)
 
 
@@ -247,7 +237,7 @@ print("4.99 Data cleansing complete")
 from pytz import all_timezones
 from pytz import timezone
 utc = timezone('UTC')
-feed_out_augmented['item_date_published'] = pd.to_datetime(feed_out_augmented['item_date_published'], utc = True)
+out_df['item_date_published'] = pd.to_datetime(out_df['item_date_published'], utc = True)
 
 print("UTC correction complete")
 
