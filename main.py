@@ -152,7 +152,6 @@ for item in rssSources_URL:
         read_URL(item)
         print(item)
         day_success = day_success + 1
-
         NewsFeed = feedparser.parse(item)
         url_count = url_count + 1
         print("URL:", item, " URL_Count:", URL_count)
@@ -160,18 +159,18 @@ for item in rssSources_URL:
                                  'item_title', 'item_creator', 'item_date_published', 'item_description', 'item_category1',
                                  'item_category2','item_category3','item_category4', 'item_category5', 'item_link', 'ext_name',
                                  'orientation', 'country', 'afinn_score', 'bing_score', 'nrc_scores', 'loughran_scores'])
-        for ent in range(1,len(d['entries'])):
-            construct.loc[ent, 'feed_title'] =  d['feed']['title']
-            construct.loc[ent, 'feed_link'] =  d['feed']['link']
-            construct.loc[ent, 'feed_description'] =  d['feed']['description']
-            construct.loc[ent, 'feed_last_updated'] =  d['feed']['updated']
-            construct.loc[ent, 'feed_language'] =  d['feed']['language']
-            construct.loc[ent, 'item_creator'] = d['feed']['author']
+        for ent in range(1,len(NewsFeed['entries'])):
+            construct.loc[ent, 'feed_title'] =  NewsFeed['feed']['title']
+            construct.loc[ent, 'feed_link'] =  NewsFeed['feed']['link']
+            construct.loc[ent, 'feed_description'] =  NewsFeed['feed']['description']
+            construct.loc[ent, 'feed_last_updated'] =  NewsFeed['feed']['updated']
+            construct.loc[ent, 'feed_language'] =  NewsFeed['feed']['language']
+            construct.loc[ent, 'item_creator'] = NewsFeed['feed']['author']
 
 
-            construct.loc[ent, 'item_title'] = d.entries[ent]['title']
-            construct.loc[ent, 'item_date_published'] = d.entries[ent]['published']
-            construct.loc[ent, 'item_link'] = d['entries'][0]['id']
+            construct.loc[ent, 'item_title'] = NewsFeed.entries[ent]['title']
+            construct.loc[ent, 'item_date_published'] = NewsFeed.entries[ent]['published']
+            construct.loc[ent, 'item_link'] = NewsFeed['entries'][0]['id']
 
             construct.loc[ent, 'ext_name'] = RSS_feeds.loc[url,'Language']
             construct.loc[ent, 'orientation'] = RSS_feeds.loc[url,'Orientation']
@@ -183,7 +182,7 @@ for item in rssSources_URL:
             construct.loc[ent, 'loughran_scores'] = filler
             day_stories = day_stories +1
             out_df.append(contruct, ignore_index = True)
-    #
+            print(construct)
     except:
         day_failure = day_failure + 1
 
