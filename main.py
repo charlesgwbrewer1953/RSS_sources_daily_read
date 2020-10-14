@@ -146,11 +146,11 @@ out_df = pd.DataFrame(columns = ['feed_title', 'feed_link', 'feed_description', 
 filler = 'filler'
 
 
-
+print("2.2 Read iteration")
 for item in rssSources_URL:
     try:                                # Verify URL exits
         read_URL(item)
-        print(item)
+        print("Loop1", item)
         day_success = day_success + 1
         NewsFeed = feedparser.parse(item)
         url_count = url_count + 1
