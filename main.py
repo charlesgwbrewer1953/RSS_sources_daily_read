@@ -1,5 +1,5 @@
 print("Section 0: Import modules")
-import sys
+
 import pymysql
 
 import sqlalchemy
@@ -7,9 +7,6 @@ from sqlalchemy import create_engine
 print("sqlalchemy imported")
 import mysql.connector
 print("mysql.connector imported")
-import pandas as pd
-import requests
-import feedparser
 from datetime import date
 from dateutil.parser import parse
 from dateutil.tz import gettz
@@ -43,7 +40,6 @@ print("Section 1: Define functions")
 def read_URL(url):
     try:
         fp = requests.get(url)
-    #        print("process read_URL: Access URL: ", url, " : Success")
     except:
         print("Access URL: ", url, " : Failure")
 
@@ -56,7 +52,7 @@ def read_RSS(url):
     nf_published = entries['published']
     nf_summary = entries['summary']
     nf_response = [nf_title, nf_published, nf_summary]
-    return(response)
+    return(nf_response)
 
 
 def read_RSS_line(url):
@@ -114,7 +110,6 @@ cursor = conn.cursor()
 
 cursor = conn.cursor()
 
-#sql = '''SELECT item_title, orientation, item_date_published  FROM RSS_library12'''
 sql = '''SELECT Feed, URL, Orientation, Country, Language FROM metis.RSS_feeds'''
 cursor.execute(sql)
 RSS_feeds = pd.DataFrame(cursor.fetchall())
@@ -147,42 +142,49 @@ filler = 'filler'
 
 
 print("2.2 Read iteration")
-for item in rssSources_URL:
+for url in rssSources_URL:
     try:                                # Verify URL exits
-        read_URL(item)
-        print("Loop1", item)
+        read_URL(url)
+        print("Loop1", url)
         day_success = day_success + 1
-        NewsFeed = feedparser.parse(item)
-        url_count = url_count + 1
-        print("URL:", item, " URL_Count:", URL_count)
-        construct = pd.DataFrame(columns = ['feed_title', 'feed_link', 'feed_description', 'feed_last_updated', 'feed_language', 'feed_update_period',
-                                 'item_title', 'item_creator', 'item_date_published', 'item_description', 'item_category1',
-                                 'item_category2','item_category3','item_category4', 'item_category5', 'item_link', 'ext_name',
-                                 'orientation', 'country', 'afinn_score', 'bing_score', 'nrc_scores', 'loughran_scores'])
-        for ent in range(1,len(NewsFeed['entries'])):
-            construct.loc[ent, 'feed_title'] =  NewsFeed['feed']['title']
-            construct.loc[ent, 'feed_link'] =  NewsFeed['feed']['link']
-            construct.loc[ent, 'feed_description'] =  NewsFeed['feed']['description']
-            construct.loc[ent, 'feed_last_updated'] =  NewsFeed['feed']['updated']
-            construct.loc[ent, 'feed_language'] =  NewsFeed['feed']['language']
-            construct.loc[ent, 'item_creator'] = NewsFeed['feed']['author']
+        try:
+            print("2.2.0.1 Entered try loop")
+            NewsFeed = feedparser.parse('https://abcnews.go.com/abcnews/topstories')
+            print("2.2.0.2 NewsFeed created. Length", len(NewsFeed), 'URL', url)
+            print(NewsFeed)
+            url_count = url_count + 1
+            print("2.2.1 URL:", url, " URL_Count:")
+            construct = pd.DataFrame(columns = ['feed_title', 'feed_link', 'feed_description', 'feed_last_updated', 'feed_language', 'feed_update_period',
+                                     'item_title', 'item_creator', 'item_date_published', 'item_description', 'item_category1',
+                                     'item_category2','item_category3','item_category4', 'item_category5', 'item_link', 'ext_name',
+                                     'orientation', 'country', 'afinn_score', 'bing_score', 'nrc_scores', 'loughran_scores'])
+            for ent in range(1,len(NewsFeed)):
+                print("2.2.1.1")
+                construct.loc[ent, 'feed_title'] =  NewsFeed['feed']['title']
+                construct.loc[ent, 'feed_link'] =  NewsFeed['feed']['link']
+                construct.loc[ent, 'feed_description'] =  NewsFeed['feed']['description']
+                construct.loc[ent, 'feed_last_updated'] =  NewsFeed['feed']['updated']
+                construct.loc[ent, 'feed_language'] =  NewsFeed['feed']['language']
+                construct.loc[ent, 'item_creator'] = NewsFeed['feed']['author']
+                print("2.2.1.2")
 
-
-            construct.loc[ent, 'item_title'] = NewsFeed.entries[ent]['title']
-            construct.loc[ent, 'item_date_published'] = NewsFeed.entries[ent]['published']
-            construct.loc[ent, 'item_link'] = NewsFeed['entries'][0]['id']
-
-            construct.loc[ent, 'ext_name'] = RSS_feeds.loc[url,'Language']
-            construct.loc[ent, 'orientation'] = RSS_feeds.loc[url,'Orientation']
-            construct.loc[ent, 'country'] = RSS_feeds.loc[url,'Country']
-
-            construct.loc[ent, 'afinn_score'] = filler
-            construct.loc[ent, 'bing_score'] = filler
-            construct.loc[ent, 'nrc_scores'] = filler
-            construct.loc[ent, 'loughran_scores'] = filler
-            day_stories = day_stories +1
-            out_df.append(contruct, ignore_index = True)
-            print(construct)
+                construct.loc[ent, 'item_title'] = NewsFeed.entries[ent]['title']
+                construct.loc[ent, 'item_date_published'] = NewsFeed.entries[ent]['published']
+                construct.loc[ent, 'item_link'] = NewsFeed['entries'][0]['id']
+                print("2.2.1.3")
+                construct.loc[ent, 'ext_name'] = RSS_feeds.loc[url,'Language']
+                construct.loc[ent, 'orientation'] = RSS_feeds.loc[url,'Orientation']
+                construct.loc[ent, 'country'] = RSS_feeds.loc[url,'Country']
+                print("2.2.1.4")
+                construct.loc[ent, 'afinn_score'] = filler
+                construct.loc[ent, 'bing_score'] = filler
+                construct.loc[ent, 'nrc_scores'] = filler
+                construct.loc[ent, 'loughran_scores'] = filler
+                day_stories = day_stories +1
+                out_df.append(construct, ignore_index = True)
+                print(construct)
+        except:
+            print("2.2.2 feedparser fail")
     except:
         day_failure = day_failure + 1
 
